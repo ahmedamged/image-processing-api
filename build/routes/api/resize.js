@@ -15,20 +15,26 @@ resizeRoute.get('/', function (req, res) {
     var fullResizedPath = "./resized-images/".concat(filename, "-").concat(imageWidth, "x").concat(imageHeight, ".png");
     var originalImageExists = fs_1.default.existsSync(fullImagePath);
     var cachedImageExists = fs_1.default.existsSync(fullResizedPath);
-    if (cachedImageExists) {
-        try {
-            console.log('Image already exists!');
-            res.writeHead(200, { 'Content-Type': 'image/png' });
-            fs_1.default.createReadStream(fullResizedPath).pipe(res);
-        }
-        catch (error) {
-            throw new Error(JSON.stringify({
-                message: "Image couldn't be retrieved!",
-            }));
-        }
+    if (!originalImageExists) {
+        res.status(404).send("Image doesn't exist!");
+    }
+    else if (Number.isNaN(imageWidth) || Number.isNaN(imageHeight)) {
+        res.status(400).send('You need to provide numeric width and height!');
     }
     else {
-        if (originalImageExists) {
+        if (cachedImageExists) {
+            try {
+                console.log('Image already exists!');
+                res.writeHead(200, { 'Content-Type': 'image/png' });
+                fs_1.default.createReadStream(fullResizedPath).pipe(res);
+            }
+            catch (error) {
+                throw new Error(JSON.stringify({
+                    message: "Image couldn't be retrieved!",
+                }));
+            }
+        }
+        else {
             try {
                 (0, sharp_1.default)(fullImagePath)
                     .resize(imageWidth, imageHeight, {
@@ -49,9 +55,6 @@ resizeRoute.get('/', function (req, res) {
                     message: "Image couldn't be resized!",
                 }));
             }
-        }
-        else {
-            res.send("Image doesn't exist!");
         }
     }
 });
