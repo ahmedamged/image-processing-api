@@ -4,12 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
+var routes_1 = __importDefault(require("./routes/routes"));
 var app = (0, express_1.default)();
-var port = 3000;
-app.get('/', function (req, res) {
-    console.log('main route');
-    res.send('test');
-});
+var port = 3036;
+app.use('/', routes_1.default);
 app.listen(port, function () {
-    console.log('Server is running successfully!');
+    console.log("Server is running successfully at http://localhost:".concat(port, " or http://127.0.0.1:").concat(port, "!"));
 });
+exports.default = app;
