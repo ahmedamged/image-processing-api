@@ -39,51 +39,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = __importDefault(require("express"));
-var fs_1 = __importDefault(require("fs"));
-var imageResizer_1 = __importDefault(require("../../utilities/imageResizer"));
-var resizeRoute = express_1.default.Router();
-resizeRoute.get('/', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var filename, imageWidth, imageHeight, fullImagePath, fullResizedPath, originalImageExists, cachedImageExists;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                filename = req.query.filename;
-                imageWidth = parseInt(req.query.width);
-                imageHeight = parseInt(req.query.height);
-                fullImagePath = "./images/".concat(filename, ".jpg");
-                fullResizedPath = "./resized-images/".concat(filename, "-").concat(imageWidth, "x").concat(imageHeight, ".png");
-                originalImageExists = fs_1.default.existsSync(fullImagePath);
-                cachedImageExists = fs_1.default.existsSync(fullResizedPath);
-                if (!!originalImageExists) return [3 /*break*/, 1];
-                res.status(404).send("Image doesn't exist!");
-                return [3 /*break*/, 5];
-            case 1:
-                if (!(Number.isNaN(imageWidth) || Number.isNaN(imageHeight))) return [3 /*break*/, 2];
-                res.status(400).send('You need to provide numeric width and height!');
-                return [3 /*break*/, 5];
-            case 2:
-                if (!cachedImageExists) return [3 /*break*/, 3];
-                try {
-                    console.log('Image already exists!');
-                    res.writeHead(200, { 'Content-Type': 'image/png' });
-                    fs_1.default.createReadStream(fullResizedPath).pipe(res);
-                }
-                catch (error) {
+var sharp_1 = __importDefault(require("sharp"));
+function imageResize(fullImagePath, fullResizedPath, imageWidth, imageHeight) {
+    return __awaiter(this, void 0, void 0, function () {
+        var error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, (0, sharp_1.default)(fullImagePath)
+                            .resize(imageWidth, imageHeight, {
+                            kernel: sharp_1.default.kernel.nearest,
+                            fit: 'cover',
+                            position: 'right top',
+                            background: { r: 255, g: 255, b: 255, alpha: 0.5 },
+                        })
+                            .toFile(fullResizedPath)];
+                case 1:
+                    _a.sent();
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_1 = _a.sent();
                     throw new Error(JSON.stringify({
-                        message: "Image couldn't be retrieved!",
+                        message: "Image couldn't be resized!",
                     }));
-                }
-                return [3 /*break*/, 5];
-            case 3: return [4 /*yield*/, (0, imageResizer_1.default)(fullImagePath, fullResizedPath, imageWidth, imageHeight)];
-            case 4:
-                _a.sent();
-                console.log('Image is resized successfully!');
-                res.writeHead(200, { 'Content-Type': 'image/png' });
-                fs_1.default.createReadStream(fullResizedPath).pipe(res);
-                _a.label = 5;
-            case 5: return [2 /*return*/];
-        }
+                case 3: return [2 /*return*/];
+            }
+        });
     });
-}); });
-exports.default = resizeRoute;
+}
+exports.default = imageResize;
